@@ -64,6 +64,7 @@ jobs:
             .
             !node_modules
             !.git
+            !bootstrap/cache
 
   deploy:
     runs-on: ubuntu-latest

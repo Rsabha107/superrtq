@@ -53,7 +53,28 @@ else
 fi
 
 # ----------------------------
-# 3. Start Laravel Queue Worker
+# 3. Laravel app preparation
+# ----------------------------
+mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+chmod -R 777 storage bootstrap/cache
+log "Storage and cache directories prepared."
+
+# Build-agent caches can reference dev-only providers that are absent in a --no-dev install.
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php
+rm -f bootstrap/cache/routes-v7.php bootstrap/cache/events.php
+log "Stale bootstrap caches removed."
+
+php artisan package:discover --ansi 2>&1 | tee -a "$LOG_FILE"
+php artisan migrate --force 2>&1 | tee -a "$LOG_FILE"
+php artisan storage:link 2>&1 | tee -a "$LOG_FILE" || true
+
+php artisan config:cache 2>&1 | tee -a "$LOG_FILE"
+php artisan route:cache 2>&1 | tee -a "$LOG_FILE"
+php artisan view:cache 2>&1 | tee -a "$LOG_FILE"
+log "Laravel caches rebuilt."
+
+# ----------------------------
+# 4. Start Laravel Queue Worker
 # ----------------------------
 # Ensure queue log directory exists
 mkdir -p "$(dirname "$QUEUE_LOG")"

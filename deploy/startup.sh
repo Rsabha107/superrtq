@@ -10,9 +10,11 @@ nginx -t && (nginx -s reload || service nginx reload)
 mkdir -p storage/framework/{cache/data,sessions,views} storage/logs bootstrap/cache
 chmod -R 777 storage bootstrap/cache
 
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
+# Build-agent caches can reference dev-only providers that are absent in a --no-dev install.
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php
+rm -f bootstrap/cache/routes-v7.php bootstrap/cache/events.php
+
+php artisan package:discover --ansi
 
 php artisan migrate --force
 php artisan storage:link || true
